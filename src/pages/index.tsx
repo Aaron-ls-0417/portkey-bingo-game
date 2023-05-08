@@ -17,19 +17,19 @@ ConfigProvider.setGlobalConfig({
   reCaptchaConfig: {
     siteKey: process.env.NEXT_PUBLIC_RECAPTCHA_CONFIG,
   },
-  socialLogin: {
-    Apple: {
-      clientId: process.env.NEXT_PUBLIC_APPLE_CLIENT_ID,
-      redirectURI: process.env.NEXT_PUBLIC_APPLE_REDIRECT_URI,
-    },
-    Google: {
-      clientId: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID,
-    },
-    Portkey: {
-      websiteName: 'Bingo Game',
-      websiteIcon: 'https://bingogame.portkey.finance/favicon.ico',
-    },
-  },
+  // socialLogin: {
+  //   Apple: {
+  //     clientId: process.env.NEXT_PUBLIC_APPLE_CLIENT_ID,
+  //     redirectURI: process.env.NEXT_PUBLIC_APPLE_REDIRECT_URI,
+  //   },
+  //   Google: {
+  //     clientId: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID,
+  //   },
+  //   Portkey: {
+  //     websiteName: 'Bingo Game',
+  //     websiteIcon: 'https://bingogame.portkey.finance/favicon.ico',
+  //   },
+  // },
   network: {
     defaultNetwork: isTestNet ? 'TESTNET' : 'MAIN',
     networkList: [
