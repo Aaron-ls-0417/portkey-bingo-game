@@ -68,7 +68,7 @@ export const decorateBalanceText = (balance: string) => {
   if (balance.lastIndexOf('.') > 0) {
     const [before, after] = balance.split('.').map((val, idx) => (idx !== 0 ? val.substring(0, 2) : val));
     const checkedAfter =
-      after.length > 1
+      after?.length > 1
         ? after[0] === '0'
           ? after
           : Number(after) % 10 === 0
@@ -77,9 +77,16 @@ export const decorateBalanceText = (balance: string) => {
         : after[0] === '0'
         ? ''
         : after;
-    dealedBalance = checkedAfter.length > 0 ? `${before}.${checkedAfter}` : before;
+    dealedBalance = checkedAfter?.length > 0 ? `${before}.${checkedAfter}` : before;
   }
   return dealedBalance.replace('.00', '');
+};
+
+export const dealWithAccountAddressDisplay = (address: string): string => {
+  const maxShow = 18;
+  return address?.length > maxShow
+    ? address?.slice(0, maxShow / 2) + '...' + address.slice(address?.length - maxShow / 2, address?.length)
+    : address;
 };
 
 export const setMyInterval = (options: IOptions) => {
@@ -111,3 +118,10 @@ export const randomNum = () => {
 };
 
 export const transaction = Sentry?.getCurrentHub()?.getScope()?.getTransaction();
+
+export const shrinkAddress = (address: string): string => {
+  const maxShow = 18;
+  return address.length > maxShow
+    ? address.slice(0, maxShow / 2) + '...' + address.slice(address.length - maxShow / 2, address.length)
+    : address;
+};

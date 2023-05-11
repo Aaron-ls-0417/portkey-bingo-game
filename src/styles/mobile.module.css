@@ -96,8 +96,8 @@
 
 .artWord {
   font-weight: 900;
-  font-size: 32px;
-  line-height: 38px;
+  font-size: 3.2rem;
+  /* line-height: 38px; */
   text-align: center;
   font-family: Helvetica;
   color: #ffffff;
@@ -111,6 +111,8 @@
 
 .defaultBtn {
   margin-top: 15.4vw;
+  width: 22rem;
+  height: 6rem;
 }
 
 .wrapper {

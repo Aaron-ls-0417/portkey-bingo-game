@@ -1,4 +1,5 @@
 const { withSentryConfig } = require('@sentry/nextjs');
+const path = require('path');
 
 const rewrites = require('./rewrites');
 

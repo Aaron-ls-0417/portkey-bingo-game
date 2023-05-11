@@ -2,13 +2,11 @@ import { useEffect, useRef, useState } from 'react';
 import { DIDWalletInfo, did } from '@portkey/did-ui-react';
 import { ChainInfo } from '@portkey/services';
 import { getContractBasic, ContractBasic } from '@portkey/contracts';
-
+import { message } from 'antd';
 import AElf from 'aelf-sdk';
 
 import { clearMyInterval, randomNum, setMyInterval, shrinkSendQrData, transaction } from '../utils/common';
-
 import { useDelay } from './useDelay';
-
 import { bingoAddress, CHAIN_ID, isTestNet } from '../constants/network';
 
 import useIntervalAsync from './useIntervalTool';
@@ -22,18 +20,10 @@ export enum StepStatus {
   LOCK,
   LOGIN,
   PLAY,
-  RAMDOM,
+  RANDOM,
   CUTDOWN,
   BINGO,
   END,
-}
-
-export enum SettingPage {
-  NULL,
-  ACCOUNT,
-  BALANCE,
-  LOGOUT,
-  QRCODE,
 }
 
 export enum ButtonType {
@@ -48,19 +38,18 @@ export enum BetType {
 
 export const KEY_NAME = 'BINGO_GAME';
 const COUNT = 5;
-const RAMDOM_COUNT = 1;
-const RAMDOM_TIME = 6;
+const RANDOM_COUNT = 1;
+const RANDOM_TIME = 6;
 
-const useBingo = (Toast: any) => {
+const useBingo = () => {
   const [step, setStep] = useState<StepStatus>(StepStatus.INIT);
-  const [settingPage, setSettingPage] = useState<SettingPage>(SettingPage.NULL);
   const [isLogin, setIsLogin] = useState<boolean>(false);
   const [showQrCode, setShowQrCode] = useState<boolean>(false);
   const [isWin, setIsWin] = useState<boolean>(false);
   const [enablePlay, setEnablePlay] = useState<boolean>(false);
 
   const [balanceValue, setBalanceValue] = useState<string>('0');
-  const [anotherBalanceValue, setAnoterhBalanceValue] = useState<string>('0');
+  const [anotherBalanceValue, setAnotherBalanceValue] = useState<string>('0');
 
   const [difference, setDifference] = useState<number>(0);
   const [result, setResult] = useState<number>(Infinity);
@@ -96,15 +85,12 @@ const useBingo = (Toast: any) => {
 
   const accountAddress = `ELF_${caAddress}_${chainInfoRef.current?.chainId}`;
 
-  // useEffect(() => {
-  //   setIsTest(document.location.href?.lastIndexOf?.('bingogame.portkey.finance') === -1);
-  // }, []);
   const options = {
     timer: null,
     callback: () => {
       setRandom(randomNum());
     },
-    timeout: RAMDOM_COUNT * 1000,
+    timeout: RANDOM_COUNT * 1000,
   };
 
   /**
@@ -149,7 +135,6 @@ const useBingo = (Toast: any) => {
 
   const getBalance = async () => {
     getCurrentChainBalance();
-    // getAnotherChainBalance();
   };
 
   const getCurrentChainBalance = async () => {
@@ -180,7 +165,7 @@ const useBingo = (Toast: any) => {
     const balance = result.data.balance / 10 ** 8;
     console.log('another balance', balance);
 
-    setAnoterhBalanceValue(balance.toString());
+    setAnotherBalanceValue(balance.toString());
   };
 
   const approve = async () => {
@@ -245,7 +230,7 @@ const useBingo = (Toast: any) => {
 
   const registerLoop = async () => {
     let registerResult = undefined;
-    const begainTime = Date.now();
+    const beginTime = Date.now();
     do {
       registerResult = await register();
       !registerResult && (await delay());
@@ -255,7 +240,7 @@ const useBingo = (Toast: any) => {
     try {
       transaction.setMeasurement(
         'Synchronizing on-chain account information ',
-        (Date.now() - begainTime) / 1000,
+        (Date.now() - beginTime) / 1000,
         'second',
       );
     } catch (error) {
@@ -338,11 +323,6 @@ const useBingo = (Toast: any) => {
   };
 
   const initContract = async () => {
-    initCurrentChainContract();
-    // initAnotherChainContract();
-  };
-
-  const initCurrentChainContract = async () => {
     const chainInfo = chainInfoRef.current;
     const wallet = walletRef.current;
     const aelf = aelfRef.current;
@@ -390,29 +370,6 @@ const useBingo = (Toast: any) => {
     setCaAddress(wallet.caInfo.caAddress);
   };
 
-  const initAnotherChainContract = async () => {
-    const chainInfo = chainsInfoRef.current.find((chain) => chain.chainId !== CHAIN_ID);
-    const wallet = walletRef.current;
-    if (!aelfRef.current || !chainInfo || !wallet) return;
-
-    try {
-      caContractRef.current = await getContractBasic({
-        contractAddress: chainInfo?.caContractAddress,
-        account: wallet.walletInfo.wallet,
-        rpcUrl: chainInfo?.endPoint,
-      });
-      const multiTokenContract = await getContractBasic({
-        contractAddress: chainInfo.defaultToken.address,
-        account: wallet.walletInfo.wallet,
-        rpcUrl: chainInfo?.endPoint,
-      });
-
-      anotherMultiTokenContractRef.current = multiTokenContract;
-    } catch (error) {
-      console.error('initAnotherChainContract: error', error);
-    }
-  };
-
   const setBalanceInputValue = (value: string) => {
     balanceInputValueRef.current = value;
   };
@@ -453,10 +410,6 @@ const useBingo = (Toast: any) => {
 
     setLoading(true);
     try {
-      // if (!wallet.registered) {
-      //   const registered = await register();
-      //   if (!registered) return showError('Synchronizing on-chain account information...');
-      // }
       if (!wallet.approved) await approve();
       const playResult = await caContract.callSendMethod('ManagerForwardCall', wallet.walletInfo.wallet.address, {
         caHash: wallet.caInfo.caHash,
@@ -475,7 +428,7 @@ const useBingo = (Toast: any) => {
       }
       txIdRef.current = playResult.data?.TransactionId || '';
       setLoading(false);
-      setStep(StepStatus.RAMDOM);
+      setStep(StepStatus.RANDOM);
 
       // SHOW RANDOM NUMBER
       setMyInterval(options);
@@ -485,7 +438,7 @@ const useBingo = (Toast: any) => {
         setStep(StepStatus.BINGO);
         setTime(COUNT);
         clearMyInterval(options.timer);
-      }, RAMDOM_TIME * 1000);
+      }, RANDOM_TIME * 1000);
     } catch (err) {
       console.error(err);
     } finally {
@@ -500,7 +453,7 @@ const useBingo = (Toast: any) => {
     if (!caContract || !wallet || !txId) return;
     setLoading(true);
 
-    const begainTime = Date.now();
+    const beginTime = Date.now();
     try {
       await caContract.callSendMethod('ManagerForwardCall', wallet.walletInfo.wallet.address, {
         caHash: wallet.caInfo.caHash,
@@ -525,7 +478,7 @@ const useBingo = (Toast: any) => {
           setLoading(false);
           showError('Draw failed, please click bingo again');
           try {
-            transaction.setMeasurement('Draw failed time ', (Date.now() - begainTime) / 1000, 'second');
+            transaction.setMeasurement('Draw failed time ', (Date.now() - beginTime) / 1000, 'second');
           } catch (error) {
             console.log('transaction error', error);
           }
@@ -533,7 +486,7 @@ const useBingo = (Toast: any) => {
         }
 
         try {
-          transaction.setMeasurement('bingo success time ', (Date.now() - begainTime) / 1000, 'second');
+          transaction.setMeasurement('bingo success time ', (Date.now() - beginTime) / 1000, 'second');
         } catch (error) {
           console.log('transaction error', error);
         }
@@ -583,12 +536,10 @@ const useBingo = (Toast: any) => {
     setLoading(false);
     window.localStorage.removeItem(KEY_NAME);
     setStep(StepStatus.LOGIN);
-    setSettingPage(SettingPage.NULL);
   };
 
   const lock = async () => {
     setStep(StepStatus.LOCK);
-    setSettingPage(SettingPage.NULL);
     did.reset();
   };
 
@@ -598,7 +549,6 @@ const useBingo = (Toast: any) => {
     if (typeof window !== undefined && window.localStorage.getItem(KEY_NAME)) {
       setEnablePlay(true);
       setStep(StepStatus.LOCK);
-      // setStep(StepStatus.RAMDOM);
     } else {
       setEnablePlay(true);
       setStep(StepStatus.LOGIN);
@@ -608,9 +558,9 @@ const useBingo = (Toast: any) => {
 
   useEffect(() => {
     if (!ToastRef.current) {
-      ToastRef.current = Toast;
+      ToastRef.current = message;
     }
-  }, [Toast]);
+  }, []);
 
   return {
     onBet,
@@ -620,14 +570,13 @@ const useBingo = (Toast: any) => {
     login,
     logOut,
     lock,
-    setSettingPage,
     setBalanceInputValue,
     setCaAddress,
     caAddress,
     balanceValue,
     setBalanceValue,
     anotherBalanceValue,
-    setAnoterhBalanceValue,
+    setAnotherBalanceValue,
     setWallet,
     balanceInputValue: balanceInputValueRef.current,
     step,
@@ -638,7 +587,6 @@ const useBingo = (Toast: any) => {
     initContract,
     setLoading,
     loading,
-    settingPage,
     isLogin,
     setIsLogin,
     showQrCode,
